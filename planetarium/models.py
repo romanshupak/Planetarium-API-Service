@@ -1,6 +1,10 @@
+import os
+import uuid
+
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.utils.text import slugify
 
 
 class PlanetariumDome(models.Model):
@@ -16,9 +20,21 @@ class PlanetariumDome(models.Model):
         return self.name
 
 
+def movie_image_file_path(instance, filename):
+    _, extension = os.path.splitext(filename)
+    filename = f"{slugify(instance.title)}-{uuid.uuid4()}{extension}"
+
+    return os.path.join("uploads/shows/", filename)
+
+
 class AstronomyShow(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True)
+    image = models.ImageField(null=True, upload_to="movie_image_file_path")
+    themes = models.ManyToManyField(
+        "ShowTheme",
+        related_name="astronomy_shows"
+    )
 
     class Meta:
         ordering = ["title",]
