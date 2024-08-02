@@ -3,6 +3,8 @@ from datetime import datetime
 from django.contrib.sessions.models import Session
 from django.db.models import Count, F
 from django.shortcuts import render
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import extend_schema, OpenApiParameter
 from rest_framework import viewsets, mixins, status
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
@@ -71,6 +73,7 @@ class AstronomyShowViewSet(
         """Retrieve the movies with filters"""
         title = self.request.query_params.get("title")
         description = self.request.query_params.get("description")
+        themes = self.request.query_params.get("themes")
 
         queryset = self.queryset
 
@@ -80,6 +83,11 @@ class AstronomyShowViewSet(
         if description:
             descriptions_ids = self._params_to_ins(description)
             queryset = queryset.filter(description__id__in=descriptions_ids)
+
+        if themes:
+            themes_ids = self._params_to_ins(themes)
+            queryset = queryset.filter(themes__id__in=themes_ids)
+
 
         return queryset.distinct()
 
@@ -109,6 +117,28 @@ class AstronomyShowViewSet(
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                "title",
+                type={"type": "list", "items": {"type": "number"}},
+                description="Filter by title id (ex. ?themes=2,5)",
+            ),
+            OpenApiParameter(
+                "description",
+                type={"type": "list", "items": {"type": "number"}},
+                description="Filter by description id (ex. ?description=2,5)",
+            ),
+            OpenApiParameter(
+                "themes",
+                type=OpenApiTypes.STR,
+                description="Filter by movie theme (ex. ?theme=flights)",
+            ),
+        ]
+    )
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
 
 
 class ShowSessionViewSet(viewsets.ModelViewSet):
