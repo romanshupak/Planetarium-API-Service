@@ -27,7 +27,7 @@ class PlanetariumDomeSerializer(serializers.ModelSerializer):
 class AstronomyShowSerializer(serializers.ModelSerializer):
     class Meta:
         model = AstronomyShow
-        fields = ("id", "title", "description")
+        fields = ("id", "title", "description", "themes")
 
 
 class AstronomyShowListSerializer(AstronomyShowSerializer):
@@ -37,7 +37,7 @@ class AstronomyShowListSerializer(AstronomyShowSerializer):
 
     class Meta:
         model = AstronomyShow
-        fields = ("id", "title", "show_themes", "image") #TODO  fix image underscores
+        fields = ("id", "title", "show_themes", "image")
 
 
 class AstronomyShowDetailSerializer(AstronomyShowSerializer):

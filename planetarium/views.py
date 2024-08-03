@@ -7,6 +7,7 @@ from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema, OpenApiParameter
 from rest_framework import viewsets, mixins, status
 from rest_framework.decorators import action
+from rest_framework.exceptions import ValidationError
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
@@ -67,12 +68,14 @@ class AstronomyShowViewSet(
     @staticmethod
     def _params_to_ins(qs):
         """Converts a list of string IDs to a list of integers"""
-        return [int(str_id) for str_id in qs.split(",")]
+        try:
+            return [int(str_id) for str_id in qs.split(",")]
+        except ValueError:
+            raise ValidationError("Invalid theme ID. All IDs must be integers.")
 
     def get_queryset(self):
-        """Retrieve the movies with filters"""
+        """Retrieve the AstronomyShow with filters"""
         title = self.request.query_params.get("title")
-        description = self.request.query_params.get("description")
         themes = self.request.query_params.get("themes")
 
         queryset = self.queryset
@@ -80,14 +83,12 @@ class AstronomyShowViewSet(
         if title:
             queryset = queryset.filter(title__icontains=title)
 
-        if description:
-            descriptions_ids = self._params_to_ins(description)
-            queryset = queryset.filter(description__id__in=descriptions_ids)
-
         if themes:
-            themes_ids = self._params_to_ins(themes)
-            queryset = queryset.filter(themes__id__in=themes_ids)
-
+            try:
+                themes_ids = self._params_to_ins(themes)
+                queryset = queryset.filter(themes__id__in=themes_ids)
+            except ValidationError as e:
+                raise ValidationError({"detail": str(e)})
 
         return queryset.distinct()
 
@@ -122,18 +123,13 @@ class AstronomyShowViewSet(
         parameters=[
             OpenApiParameter(
                 "title",
-                type={"type": "list", "items": {"type": "number"}},
-                description="Filter by title id (ex. ?themes=2,5)",
-            ),
-            OpenApiParameter(
-                "description",
-                type={"type": "list", "items": {"type": "number"}},
-                description="Filter by description id (ex. ?description=2,5)",
+                type=OpenApiTypes.STR,
+                description="Filter by title (ex. ?title=Stars)",
             ),
             OpenApiParameter(
                 "themes",
-                type=OpenApiTypes.STR,
-                description="Filter by movie theme (ex. ?theme=flights)",
+                type={"type": "list", "items": {"type": "number"}},
+                description="Filter by theme ID (ex. ?themes=1,2,3)",
             ),
         ]
     )
@@ -178,6 +174,26 @@ class ShowSessionViewSet(viewsets.ModelViewSet):
             return ShowSessionDetailSerializer
 
         return ShowSessionSerializer
+
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                "astronomy_show",
+                type=OpenApiTypes.INT,
+                description="Filter by astronomy_show id (ex. ?show=2)",
+            ),
+            OpenApiParameter(
+                "date",
+                type=OpenApiTypes.DATE,
+                description=(
+                        "Filter by datetime of ShowSession "
+                        "(ex. ?date=2022-10-23)"
+                ),
+            ),
+        ]
+    )
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
 
 
 class ReservationPagination(PageNumberPagination):
