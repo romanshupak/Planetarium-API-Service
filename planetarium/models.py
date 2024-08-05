@@ -33,7 +33,8 @@ class AstronomyShow(models.Model):
     image = models.ImageField(null=True, upload_to="movie_image_file_path")
     themes = models.ManyToManyField(
         "ShowTheme",
-        related_name="astronomy_shows"
+        related_name="astronomy_shows",
+        blank=True
     )
 
     class Meta:
