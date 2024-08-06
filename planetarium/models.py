@@ -77,7 +77,7 @@ class Ticket(models.Model):
         ShowSession, on_delete=models.CASCADE, related_name="tickets"
     )
     reservation = models.ForeignKey(
-        Reservation, on_delete=models.CASCADE, related_name="reservations"
+        Reservation, on_delete=models.CASCADE, related_name="tickets"
     )
 
     @staticmethod
