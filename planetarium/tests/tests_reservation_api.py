@@ -45,7 +45,15 @@ def sample_astronomy_show(**params):
 def sample_show_session(**params):
     astronomy_show = sample_astronomy_show()
     planetarium_dome = sample_planetarium_dome()
-    show_time = datetime(2024, 12, 6, 18, 0, 0, tzinfo=pytz.UTC)
+    show_time = datetime(
+        2024,
+        12,
+        6,
+        18,
+        0,
+        0,
+        tzinfo=pytz.UTC
+    )
     defaults = {
         "astronomy_show": astronomy_show,
         "planetarium_dome": planetarium_dome,
