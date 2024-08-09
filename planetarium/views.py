@@ -71,7 +71,9 @@ class AstronomyShowViewSet(
         try:
             return [int(str_id) for str_id in qs.split(",")]
         except ValueError:
-            raise ValidationError("Invalid theme ID. All IDs must be integers.")
+            raise ValidationError(
+                "Invalid theme ID. All IDs must be integers."
+            )
 
     def get_queryset(self):
         """Retrieve the AstronomyShow with filters"""
@@ -143,7 +145,8 @@ class ShowSessionViewSet(viewsets.ModelViewSet):
         .select_related("astronomy_show", "planetarium_dome")
         .annotate(
             tickets_available=(
-                F("planetarium_dome__rows") * F("planetarium_dome__seats_in_row")
+                F("planetarium_dome__rows")
+                * F("planetarium_dome__seats_in_row")
                 - Count("tickets")
             )
         )
@@ -153,7 +156,9 @@ class ShowSessionViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         date = self.request.query_params.get("date")
-        astronomy_show_id_str = self.request.query_params.get("astronomy_show")
+        astronomy_show_id_str = self.request.query_params.get(
+            "astronomy_show"
+        )
 
         queryset = self.queryset
 
@@ -162,7 +167,9 @@ class ShowSessionViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(show_time__date=date)
 
         if astronomy_show_id_str:
-            queryset = queryset.filter(astronomy_show__id=int(astronomy_show_id_str))
+            queryset = queryset.filter(
+                astronomy_show__id=int(astronomy_show_id_str)
+            )
 
         return queryset
 
