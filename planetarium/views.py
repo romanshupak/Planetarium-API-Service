@@ -1,8 +1,6 @@
 from datetime import datetime
 
-from django.contrib.sessions.models import Session
 from django.db.models import Count, F
-from django.shortcuts import render
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema, OpenApiParameter
 from rest_framework import viewsets, mixins, status
